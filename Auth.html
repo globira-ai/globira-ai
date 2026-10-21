@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e130b">
+<title>GLOBIRA.AI — Cinematic Authentication</title>
+<!-- Google Font: Playwrite Argentina -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playwrite+AR:wght@100..400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e130b;--bg2:#151c10;--leaf:#6f9a4a;--leaf2:#a9cf72;--moss:#3f5a2b;--cream:#efe6d0;--mut:#b4ad98;--gold:#d9b46f;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fast-ease:cubic-bezier(0.16, 1, 0.3, 1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--cream);font-family:var(--sans);
+  min-height:100svh;display:flex;align-items:center;justify-content:center;
+  overflow-y:auto;overflow-x:hidden;position:relative;padding:40px 20px;perspective:1400px;
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.12;mix-blend-mode:soft-light;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.3'/%3E%3C/svg%3E");
+}
+
+/* Vivid 3D Animated Background Canvas */
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+.aur{position:fixed;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+.aur i{position:absolute;width:60vmax;height:60vmax;border-radius:50%;filter:blur(90px);opacity:.35;animation:drift 18s ease-in-out infinite alternate}
+.aur i:nth-child(1){background:#3f5a2b;top:-10%;left:-10%}
+.aur i:nth-child(2){background:#6f9a4a;opacity:.2;bottom:-15%;right:-10%;animation-duration:24s}
+.aur i:nth-child(3){background:#d9b46f;opacity:.12;top:40%;left:30%;animation-duration:20s}
+@keyframes drift{to{transform:translate(15vw,10vh) scale(1.25) rotate(30deg)}}
+
+/* Main Container with generous vertical padding to prevent any clipping */
+.auth-container{
+  position:relative;z-index:5;width:100%;max-width:440px;padding:38px 28px;
+  border-radius:28px;border:1px solid rgba(239,230,208,.16);
+  background:linear-gradient(160deg,rgba(26,35,20,0.92),rgba(16,22,14,0.97));
+  box-shadow:0 35px 75px rgba(0,0,0,.7),0 0 60px rgba(111,154,74,.2), inset 0 1px 0 rgba(255,255,255,0.15);
+  backdrop-filter:blur(20px);
+  transform-style:preserve-3d;
+  will-change:transform;
+  animation:cardIn 1s var(--fast-ease) backwards;
+  margin:auto;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(40px) scale(0.96)}}
+
+.brand{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  font-family:"Playwrite AR", cursive;
+  font-weight:400; font-size:22px;letter-spacing:-0.02em;margin-bottom:24px;
+  color:var(--cream);text-shadow:0 2px 10px rgba(111,154,74,0.4);
+}
+.brand svg{width:34px;height:auto;animation:pulseLogo 3s ease-in-out infinite}
+@keyframes pulseLogo{0%,100%{transform:scale(1)}50%{transform:scale(1.1) rotate(10deg);filter:drop-shadow(0 0 18px rgba(111,154,74,0.8))}}
+
+/* Tabs */
+.tabs{
+  display:flex;background:rgba(14,19,11,.75);border-radius:99px;padding:4px;margin-bottom:24px;
+  border:1px solid rgba(239,230,208,.18);position:relative;
+}
+.tab-indicator{
+  position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
+  background:var(--cream);border-radius:99px;transition:transform 0.4s var(--fast-ease);
+  z-index:1;box-shadow:0 4px 15px rgba(0,0,0,0.3);
+}
+.tabs.right .tab-indicator{transform:translateX(100%);}
+.tabs button{
+  flex:1;padding:11px;border-radius:99px;font-weight:600;font-size:12px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--mut);cursor:pointer;
+  background:transparent;border:0;transition:color .25s;z-index:2;position:relative;
+}
+.tabs button.active{color:#1c2314}
+
+/* 3D Flip Viewport Container with safe height */
+.flip-viewport{
+  position:relative;width:100%;perspective:1000px;min-height:380px;
+}
+.flip-card-inner{
+  position:relative;width:100%;height:100%;transition:transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style:preserve-3d;
+}
+.flip-card-inner.flipped{
+  transform:rotateY(180deg);
+}
+
+.form-panel{
+  position:absolute;inset:0;width:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+#login-panel{
+  transform:rotateY(180deg);
+}
+
+.input-group{margin-bottom:16px}
+.input-group label{
+  display:block;font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--leaf2);margin-bottom:6px;font-weight:600;
+}
+.input-group input{
+  width:100%;padding:14px 18px;border-radius:99px;
+  border:1px solid rgba(239,230,208,.25);background:rgba(14,19,11,.65);
+  color:var(--cream);font:inherit;outline:0;
+  transition:border-color .25s, box-shadow .25s, transform .25s;
+}
+.input-group input:focus{
+  border-color:var(--leaf2);
+  box-shadow:0 0 0 4px rgba(169,207,114,.2);
+  transform:translateY(-1px);
+}
+
+.btn-primary{
+  display:flex;align-items:center;justify-content:center;width:100%;
+  padding:14px 22px;border-radius:99px;background:var(--cream);color:#1c2314;
+  font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  cursor:pointer;border:0;transition:transform .25s var(--fast-ease), background .25s, box-shadow .25s;
+  margin-top:10px;
+}
+.btn-primary:hover{background:var(--leaf2);transform:translateY(-2px);box-shadow:0 8px 20px rgba(169,207,114,0.35)}
+.btn-primary:active{transform:translateY(0)}
+
+.btn-ghost{
+  display:flex;align-items:center;justify-content:center;width:100%;
+  padding:13px 22px;border-radius:99px;background:transparent;color:var(--cream);
+  border:1px solid rgba(239,230,208,.28);font-weight:600;font-size:12px;
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  transition:background .25s, border-color .25s, transform .25s;margin-top:10px;
+}
+.btn-ghost:hover{background:rgba(239,230,208,.08);border-color:var(--leaf2);transform:translateY(-2px)}
+
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translate(-50%,20px) scale(0.95);
+  padding:12px 24px;border-radius:99px;background:rgba(21,28,16,.95);
+  border:1px solid rgba(169,207,114,.4);font-size:13px;opacity:0;
+  transition:transform 0.3s var(--fast-ease), opacity 0.3s;pointer-events:none;z-index:100;
+  box-shadow:0 10px 25px rgba(0,0,0,0.5);
+}
+.toast.on{opacity:1;transform:translate(-50%,0) scale(1)}
+</style>
+</head>
+<body>
+
+<!-- Advanced 3D Glowing Orb & Particle Network Canvas -->
+<canvas id="bgCanvas"></canvas>
+
+<div class="aur"><i></i><i></i><i></i></div>
+
+<div class="auth-container" id="authCard">
+  <div class="brand">
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 10C27.9086 10 10 27.9086 10 50C10 72.0914 27.9086 90 50 90C72.0914 90 90 72.0914 90 50C90 27.9086 72.0914 10 50 10Z" stroke="#6F9A4A" stroke-width="6"/>
+      <path d="M30 50L45 65L70 35" stroke="#A9CF72" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>GLOBIRA.AI</span>
+  </div>
+
+  <div class="tabs" id="tabsContainer">
+    <div class="tab-indicator"></div>
+    <button class="active" onclick="switchTab('register')">Register</button>
+    <button onclick="switchTab('login')">Login</button>
+  </div>
+
+  <!-- 3D Flip Card Viewport -->
+  <div class="flip-viewport">
+    <div class="flip-card-inner" id="flipCardInner">
+      
+      <!-- Register Form -->
+      <div id="register-panel" class="form-panel">
+        <form onsubmit="handleRegister(event)">
+          <div class="input-group">
+            <label>Name:-</label>
+            <input type="text" id="regName" placeholder="Enter your full name" required>
+          </div>
+          <div class="input-group">
+            <label>Email:-</label>
+            <input type="email" id="regEmail" placeholder="name@example.com" required>
+          </div>
+          <div class="input-group">
+            <label>Password:-</label>
+            <input type="password" id="regPass" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-primary">Create Account</button>
+        </form>
+        <button class="btn-ghost" onclick="skipAuth()" href="Auth.html">Start without login.</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-panel" class="form-panel">
+        <form onsubmit="handleLogin(event)">
+          <div class="input-group">
+            <label>Email:-</label>
+            <input type="email" id="logEmail" placeholder="name@example.com" required>
+          </div>
+          <div class="input-group">
+            <label>Password:-</label>
+            <input type="password" id="logPass" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-primary">Sign In</button>
+        </form>
+        <button class="btn-ghost" onclick="skipAuth()" href="Auth.html" >Start without login.</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Action completed</div>
+
+<script>
+// High-Visibility 3D Floating Orbs & Starfield Canvas Animation
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+const numParticles = 45;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class SpaceParticle {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = (Math.random() - 0.5) * canvas.width * 1.5;
+    this.y = (Math.random() - 0.5) * canvas.height * 1.5;
+    this.z = Math.random() * 900 + 100;
+    this.size = Math.random() * 2.5 + 1;
+    this.speedZ = Math.random() * 1.2 + 0.4;
+  }
+  update() {
+    this.z -= this.speedZ;
+    if (this.z < 10) this.z = 1000;
+  }
+  draw() {
+    let fov = 350;
+    let scale = fov / this.z;
+    let x2d = canvas.width / 2 + this.x * scale;
+    let y2d = canvas.height / 2 + this.y * scale;
+
+    if (x2d >= 0 && x2d <= canvas.width && y2d >= 0 && y2d <= canvas.height) {
+      let alpha = Math.min(1, (1000 - this.z) / 800);
+      ctx.fillStyle = `rgba(169, 207, 114, ${alpha * 0.8})`;
+      ctx.beginPath();
+      ctx.arc(x2d, y2d, this.size * scale, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+for (let i = 0; i < numParticles; i++) {
+  particles.push(new SpaceParticle());
+}
+
+function animateBackground() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  for (let i = 0; i < particles.length; i++) {
+    particles[i].update();
+    particles[i].draw();
+
+    for (let j = i + 1; j < particles.length; j++) {
+      let dx = particles[i].x - particles[j].x;
+      let dy = particles[i].y - particles[j].y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 130) {
+        let fov = 350;
+        let scale1 = fov / particles[i].z;
+        let scale2 = fov / particles[j].z;
+        let x1 = canvas.width / 2 + particles[i].x * scale1;
+        let y1 = canvas.height / 2 + particles[i].y * scale1;
+        let x2 = canvas.width / 2 + particles[j].x * scale2;
+        let y2 = canvas.height / 2 + particles[j].y * scale2;
+
+        ctx.strokeStyle = `rgba(111, 154, 74, ${0.25 * (1 - dist / 130)})`;
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animateBackground);
+}
+animateBackground();
+
+// Fast, Frictionless 3D Card Tilt & Flip Switching
+const card = document.getElementById('authCard');
+document.addEventListener('mousemove', (e) => {
+  const xAxis = (window.innerWidth / 2 - e.pageX) / 40;
+  const yAxis = (window.innerHeight / 2 - e.pageY) / 40;
+  card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+});
+
+document.addEventListener('mouseleave', () => {
+  card.style.transform = `rotateY(0deg) rotateX(0deg)`;
+  card.style.transition = 'transform 0.4s ease';
+});
+
+card.addEventListener('mouseenter', () => {
+  card.style.transition = 'none';
+});
+
+function switchTab(tab) {
+  const tabsContainer = document.getElementById('tabsContainer');
+  const flipCardInner = document.getElementById('flipCardInner');
+  const buttons = document.querySelectorAll('.tabs button');
+
+  buttons.forEach(b => b.classList.remove('active'));
+
+  if(tab === 'register') {
+    tabsContainer.classList.remove('right');
+    buttons[0].classList.add('active');
+    flipCardInner.classList.remove('flipped');
+  } else {
+    tabsContainer.classList.add('right');
+    buttons[1].classList.add('active');
+    flipCardInner.classList.add('flipped');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+// 1. Start without login -> Redirect page
+function skipAuth() {
+  showToast('Starting session instantly...');
+  setTimeout(() => {
+    window.location.href = 'dashboard.html'; // Replace with your target landing/home page URL
+  }, 1000);
+}
+
+// 2. Create Account -> Insert data in database (simulated) & redirect to login side
+function handleRegister(e) {
+  e.preventDefault();
+  const name = document.getElementById('regName').value;
+  const email = document.getElementById('regEmail').value;
+  const pass = document.getElementById('regPass').value;
+
+  // Simulate database data insertion space
+  console.log("Database Insertion -> Name:", name, "Email:", email, "Password:", pass);
+
+  showToast('Account created successfully! Please sign in.');
+  setTimeout(() => {
+    switchTab('login');
+  }, 1000);
+}
+
+// 3. Sign In -> Identify data in database (simulated) & redirect to dashboard page
+function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('logEmail').value;
+  const pass = document.getElementById('logPass').value;
+
+  // Simulate database data identification space
+  console.log("Database Verification -> Email:", email, "Password:", pass);
+
+  showToast('Signed in successfully! Redirecting...');
+  setTimeout(() => {
+    window.location.href = 'dashboard.html'; // Replace with your target dashboard page URL
+  }, 1000);
+}
+</script>
+
+</body>
+</html>
